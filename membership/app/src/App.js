@@ -3,20 +3,26 @@ import { useAragonApi } from '@aragon/api-react'
 import { Main, Button } from '@aragon/ui'
 import styled from 'styled-components'
 import { first } from 'rxjs/operators'
-// const getAccounts = require('@aragon/os/scripts/helpers/get-accounts')
+import FooTokenABI from '../../build/contracts/FooToken.json'
 
+const durationInSeconds = 5 /* minutes */ * 60 * 1000
+const paymentAmount = 1
+const subscriptionBaseURI = 'http://localhost:9000/.functions/tokenURI/'
 function App() {
   const { api, appState } = useAragonApi()
   const {subscriptions, name, symbol, isSyncing } = appState
   console.log({subscriptions, name, symbol, isSyncing})
-  async function checkAccount() {
-    console.log('check')
-    let account = (await api.accounts().pipe(first()).toPromise())[0]
-    console.log({account})
-    let subscriptions = await api.call('totalSubscriptions').toPromise()
-    console.log({subscriptions})
-    let name = await api.call('name').toPromise()
-    console.log({name})
+
+  async function getTokenAddress() {
+    console.log('get token address')
+    let network = await api.network().pipe(first()).toPromise()
+    console.log({network})
+    let address = FooTokenABI.networks[network.id].address
+    console.log({address})
+    return address
+  }
+  async function getAccount() {
+    return (await api.accounts().pipe(first()).toPromise())[0]
   }
   return (
     <Main>
@@ -26,12 +32,12 @@ function App() {
         <Name>Name: {name}</Name>
         <Name>Symbol: {symbol}</Name>
         <Buttons>
-          <Button mode="secondary" onClick={() => api.addSubscription(1, 1, '0x' + '1'.repeat(40), '0x' + '1'.repeat(40)).toPromise()}>
+          <Button mode="secondary" onClick={async () => api.addSubscription(durationInSeconds, paymentAmount, await getAccount(), await getTokenAddress(), subscriptionBaseURI).toPromise()}>
             Add Subscription
           </Button>
-          <Button mode="secondary" onClick={checkAccount}>
+          {/* <Button mode="secondary" onClick={checkAccount}>
             Check
-          </Button>
+          </Button> */}
           {/* <Button mode="secondary" onClick={() => api.increment(1).toPromise()}>
             Increment
           </Button> */}

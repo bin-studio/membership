@@ -1,6 +1,6 @@
 /* global artifacts */
-var CounterApp = artifacts.require('CounterApp.sol')
+var FooToken = artifacts.require('FooToken.sol')
 
 module.exports = function(deployer) {
-  deployer.deploy(CounterApp)
+  deployer.deploy(FooToken, "FooToken", "FT", 0)
 }

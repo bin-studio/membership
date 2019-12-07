@@ -39,11 +39,37 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     mapping(uint256=>Payment) payments;
 
     /**
+     * @notice Adds a new subscription
+     */
+    function addSubscription(uint64 durationInSeconds, uint256 amount, address recipient, address tokenAddress, string baseURI)
+    external auth(ADMIN_ROLE) returns(uint256) {
+        require(durationInSeconds > 0, "Duration must be greater than 0");
+        require(uint256(recipient) != 0, "Recipient can't be empty");
+        require(uint256(tokenAddress) != 0, "Token can't be empty");
+        // require(amount > 0, "Amount must be greater than 0"); // 0 Amount subscriptions might be desireable.
+
+        uint256 subscriptionId = uint256(keccak256(abi.encodePacked(durationInSeconds, amount, recipient, tokenAddress)));
+        require(!subscriptions[subscriptionId].exists, "Subscription with those attributes already exists");
+
+        subscriptions[subscriptionId].exists = true;
+        subscriptions[subscriptionId].durationInSeconds = durationInSeconds;
+        subscriptions[subscriptionId].amount = amount;
+        subscriptions[subscriptionId].recipient = recipient;
+        subscriptions[subscriptionId].tokenAddress = tokenAddress;
+        subscriptions[subscriptionId].tokenURI = baseURI;
+
+        subscriptionIds.push(subscriptionId);
+        emit NewSubscription(subscriptionId, durationInSeconds, amount, recipient, tokenAddress);
+        return subscriptionId;
+    }
+
+    /**
      * @notice Gets the total subscriptions
      */
     function totalSubscriptions() public view returns(uint256) {
         return subscriptionIds.length;
     }
+
     /**
      * @notice Initializes the app
      */
@@ -61,30 +87,6 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     }
 
     /**
-     * @notice Adds a new subscription
-     */
-    function addSubscription(uint64 durationInSeconds, uint256 amount, address recipient, address tokenAddress)
-    external auth(ADMIN_ROLE) returns(uint256) {
-        require(durationInSeconds > 0, "Duration must be greater than 0");
-        require(uint256(recipient) != 0, "Recipient can't be empty");
-        require(uint256(tokenAddress) != 0, "Token can't be empty");
-        // require(amount > 0, "Amount must be greater than 0"); // 0 Amount subscriptions might be desireable.
-
-        uint256 subscriptionId = uint256(keccak256(abi.encodePacked(durationInSeconds, amount, recipient, tokenAddress)));
-        require(!subscriptions[subscriptionId].exists, "Subscription with those attributes already exists");
-
-        subscriptions[subscriptionId].exists = true;
-        subscriptions[subscriptionId].durationInSeconds = durationInSeconds;
-        subscriptions[subscriptionId].amount = amount;
-        subscriptions[subscriptionId].recipient = recipient;
-        subscriptions[subscriptionId].tokenAddress = tokenAddress;
-
-        subscriptionIds.push(subscriptionId);
-        emit NewSubscription(subscriptionId, durationInSeconds, amount, recipient, tokenAddress);
-        return subscriptionId;
-    }
-
-    /**
      * @notice Decrement the counter by 1
      */
     function sinceLastExecution(uint256 subscriptionId, address subscriber) public view returns(uint64) {
@@ -95,17 +97,17 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
      * @notice Decrement the counter by 1
      */
     function checkSubscription(uint256 subscriptionId, address subscriber) public view
-        returns (uint64 _timeSinceLastExecution, uint256 lastNFT) {
-            uint64 lastExecuted = instances[subscriber][subscriptionId].lastExecuted;
-            uint256 nftId = uint256(keccak256(abi.encodePacked(subscriptionId, subscriber, lastExecuted)));
+    returns (uint64 _timeSinceLastExecution, uint256 lastNFT) {
+        uint64 lastExecuted = instances[subscriber][subscriptionId].lastExecuted;
+        uint256 nftId = uint256(keccak256(abi.encodePacked(subscriptionId, subscriber, lastExecuted)));
 
-            return (getTimestamp64() - lastExecuted, nftId);
+        return (getTimestamp64() - lastExecuted, nftId);
     }
 
     /**
      * @notice Increment the counter by 1
      */
-    function subscribe(uint256 subscriptionId) external isInitialized {
+    function subscribe(uint256 subscriptionId) public isInitialized {
         require(subscriptions[subscriptionId].exists, "Subscription must exist");
         require(!instances[msg.sender][subscriptionId].exists, "Subscription instance already exists");
 
