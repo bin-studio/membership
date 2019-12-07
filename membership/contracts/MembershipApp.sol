@@ -39,13 +39,13 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     mapping(uint256=>Payment) payments;
 
     /**
-     * @notice Decrement the counter by 1
+     * @notice Gets the total subscriptions
      */
     function totalSubscriptions() public view returns(uint256) {
         return subscriptionIds.length;
     }
     /**
-     * @notice Decrement the counter by 1
+     * @notice Initializes the app
      */
     function initialize(string name, string symbol) onlyInit public {
         _name = name;
@@ -54,14 +54,14 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     }
 
     /**
-     * @notice Decrement the counter by 1
+     * @notice Gets the URI of the token
      */
     function getURI(uint256 tokenId) public view returns (string) {
         return subscriptions[payments[tokenId].subscriptionId].tokenURI;
     }
 
     /**
-     * @notice Decrement the counter by 1
+     * @notice Adds a new subscription
      */
     function addSubscription(uint64 durationInSeconds, uint256 amount, address recipient, address tokenAddress)
     external auth(ADMIN_ROLE) returns(uint256) {

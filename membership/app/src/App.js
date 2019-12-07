@@ -2,23 +2,39 @@ import React from 'react'
 import { useAragonApi } from '@aragon/api-react'
 import { Main, Button } from '@aragon/ui'
 import styled from 'styled-components'
+import { first } from 'rxjs/operators'
+// const getAccounts = require('@aragon/os/scripts/helpers/get-accounts')
 
 function App() {
   const { api, appState } = useAragonApi()
-  const { count, isSyncing } = appState
-  console.log(count, isSyncing)
+  const {subscriptions, name, symbol, isSyncing } = appState
+  console.log({subscriptions, name, symbol, isSyncing})
+  async function checkAccount() {
+    console.log('check')
+    let account = (await api.accounts().pipe(first()).toPromise())[0]
+    console.log({account})
+    let subscriptions = await api.call('totalSubscriptions').toPromise()
+    console.log({subscriptions})
+    let name = await api.call('name').toPromise()
+    console.log({name})
+  }
   return (
     <Main>
       <BaseLayout>
         {isSyncing && <Syncing />}
-        <Count>Count: {count}</Count>
+        <Name>Subscriptions: {subscriptions}</Name>
+        <Name>Name: {name}</Name>
+        <Name>Symbol: {symbol}</Name>
         <Buttons>
-          <Button mode="secondary" onClick={() => api.decrement(1).toPromise()}>
-            Decrement
+          <Button mode="secondary" onClick={() => api.addSubscription(1, 1, '0x' + '1'.repeat(40), '0x' + '1'.repeat(40)).toPromise()}>
+            Add Subscription
           </Button>
-          <Button mode="secondary" onClick={() => api.increment(1).toPromise()}>
+          <Button mode="secondary" onClick={checkAccount}>
+            Check
+          </Button>
+          {/* <Button mode="secondary" onClick={() => api.increment(1).toPromise()}>
             Increment
-          </Button>
+          </Button> */}
         </Buttons>
       </BaseLayout>
     </Main>
@@ -33,7 +49,7 @@ const BaseLayout = styled.div`
   flex-direction: column;
 `
 
-const Count = styled.h1`
+const Name = styled.h1`
   font-size: 30px;
 `
 

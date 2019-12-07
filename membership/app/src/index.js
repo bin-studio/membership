@@ -4,8 +4,14 @@ import { AragonApi } from '@aragon/api-react'
 import App from './App'
 
 const reducer = state => {
+  console.log('reducer called')
   if (state === null) {
-    return { count: 0, isSyncing: true }
+    return {
+      subscriptions: 0,
+      isSyncing: true,
+      name: "",
+      symbol: "",
+    }
   }
   return state
 }
