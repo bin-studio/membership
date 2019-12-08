@@ -3,16 +3,18 @@ import { useAragonApi } from '@aragon/api-react'
 import { Main, Button } from '@aragon/ui'
 import styled from 'styled-components'
 import { first } from 'rxjs/operators'
-import FooTokenABI from '../../build/contracts/FooToken.json'
-
+try {
+  var FooTokenABI = require('../../build/contracts/FooToken.json')
+} catch (error) {
+  console.log(`don't have fooToken ABI`)
+}
 const durationInSeconds = 5 /* minutes */ * 60 * 1000
 const paymentAmount = 1
 const subscriptionBaseURI = 'http://localhost:9000/.functions/tokenURI/'
 
 function App() {
   const { api, appState } = useAragonApi()
-  console.log({appState})
-  const {account, subscriptions, name, symbol, isSyncing } = appState
+  const { account, subscriptions, name, symbol, isSyncing } = appState
 
   async function getTokenAddress() {
     let network = await api.network().pipe(first()).toPromise()
@@ -21,7 +23,8 @@ function App() {
   }
 
   async function addSubscription() {
-    api.addSubscription(durationInSeconds,
+    api.addSubscription(
+      durationInSeconds,
       paymentAmount,
       account,
       await getTokenAddress(),

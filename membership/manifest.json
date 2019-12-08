@@ -3,7 +3,7 @@
   "author": "Bin Studio",
   "description": "A membership application for Aragon",
   "details_url": "/meta/details.md",
-  "source_url": "https://<placeholder-repository-url>",
+  "source_url": "https://github.com/bin-studio/membership",
   "icons": [
     {
       "src": "/meta/icon.svg",

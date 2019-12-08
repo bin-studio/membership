@@ -46,6 +46,5 @@ async function getAccount() {
 
 async function getValue() {
   const totalSubscriptions = await app.call('totalSubscriptions').toPromise()
-  console.log({totalSubscriptions})
   return parseInt(totalSubscriptions, 10)
 }
