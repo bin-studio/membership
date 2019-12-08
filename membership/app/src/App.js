@@ -8,6 +8,7 @@ import FooTokenABI from '../../build/contracts/FooToken.json'
 const durationInSeconds = 5 /* minutes */ * 60 * 1000
 const paymentAmount = 1
 const subscriptionBaseURI = 'http://localhost:9000/.functions/tokenURI/'
+
 function App() {
   const { api, appState } = useAragonApi()
   const {account, subscriptions, name, symbol, isSyncing } = appState

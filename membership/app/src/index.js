@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom'
 import { AragonApi } from '@aragon/api-react'
 import App from './App'
 
-const reducer = state => {
-  console.log('reducer called')
+const reducer = (state, action) => {
+  console.log('reducer called', {action})
   if (state === null) {
     return {
       subscriptions: 0,

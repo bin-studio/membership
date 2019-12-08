@@ -5,32 +5,23 @@ import { first } from 'rxjs/operators'
 
 const app = new Aragon()
 
-app.store(async (state, { event }) => {
-  console.log('event trigger')
+app.store(async (state, {event, returnValues}) => {
+  console.log('webworker reducer called')
+  console.log({event, returnValues})
   let nextState = { ...state }
-  console.log('before', {nextState})
 
   // Initial state
   if (state == null) {
-    // const values = await new PromiseAll([
-    //   await app.call('name').toPromise(),
-    //   await app.call('symbol').toPromise(),
-    //   await getValue()
-    // ])
     nextState = {
-      account: (await app.accounts().pipe(first()).toPromise())[0],
+      account: await getAccount(),
       name: await app.call('name').toPromise(),
       symbol: await app.call('symbol').toPromise(),
       subscriptions: await getValue()
     }
   }
 
-  let account = (await app.accounts().pipe(first()).toPromise())[0]
-  console.log({account})
-
   switch (event) {
     case 'NewSubscription':
-      console.log({event})
       nextState = { ...nextState, subscriptions: await getValue() }
       break
     case events.SYNC_STATUS_SYNCING:
@@ -39,12 +30,19 @@ app.store(async (state, { event }) => {
     case events.SYNC_STATUS_SYNCED:
       nextState = { ...nextState, isSyncing: false }
       break
+    case events.ACCOUNTS_TRIGGER:
+        nextState = { ...nextState, account: await getAccount() }
+      break
     default:
         console.log('unknown event', {event})
   }
 
   return nextState
 })
+
+async function getAccount() {
+  return (await app.accounts().pipe(first()).toPromise())[0]
+}
 
 async function getValue() {
   const totalSubscriptions = await app.call('totalSubscriptions').toPromise()
