@@ -1,0 +1,15 @@
+{
+  "name": "membership-token-api",
+  "version": "1.0.0",
+  "description": "lambda functions for serving token URIs w membership app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ethers": "^5.0.0-beta.162",
+    "netlify-lambda": "^1.6.3"
+  }
+}
