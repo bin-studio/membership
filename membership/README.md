@@ -1,3 +1,9 @@
+# Membership App
+
+In one terminal window run `yarn start:app`  
+In another terminal window run `yarn start:http`  
+Once the second terminal window finishes, open a third window and run  `yarn foobarToken`  
+
 # Aragon React Boilerplate
 
 > 🕵️ [Find more boilerplates using GitHub](https://github.com/search?q=topic:aragon-boilerplate) |
