@@ -4,7 +4,7 @@ import { AragonApi } from '@aragon/api-react'
 import App from './App'
 
 const reducer = (state, action) => {
-  console.log('reducer called', {action})
+  // console.log('reducer called', {action})
   if (state === null) {
     return {
       // subscriptions: 0,

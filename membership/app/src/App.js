@@ -46,7 +46,8 @@ function App() {
         ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
         Amount – {sub.amount} [??]<br />
         Frequency – {sub.durationInSeconds} seconds<br />
-        <Button size="small" label="Subscribe" onClick={() => subscribe(sub.subscriptionId)} />
+        <Button label="Subscribe" size="small" onClick={() => subscribe(sub.subscriptionId)} />
+        <Button label="Delete" size="small" mode="negative" onClick={() => removeSubscription(sub.subscriptionId)}  />
       </li>
     )
     return (
@@ -56,8 +57,13 @@ function App() {
 
   // subscribe to subscription
   async function subscribe(subscriptionId) {
-    console.log(subscriptionId)
+    console.log('subscribe to', subscriptionId)
     return api.subscribe(subscriptionId).toPromise()
+  }
+  // remove subscription
+  async function removeSubscription(subscriptionId) {
+    console.log('remove', subscriptionId)
+    return api.removeSubscription(subscriptionId).toPromise()
   }
 
   return (
