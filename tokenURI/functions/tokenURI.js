@@ -4,7 +4,7 @@ const abi = MembershipApp.abi
 let contractAddress = '0xA15Cc45A8751bCC2794FdD955ec49Efc9615E4Cc'
 
 export async function handler(event, context) {
-    console.log({event, context})
+    // console.log({event, context})
 
     // let provider = ethers.getDefaultProvider('rinkeby');
 
@@ -13,8 +13,8 @@ export async function handler(event, context) {
         let provider = new ethers.providers.JsonRpcProvider();
         let contract = new ethers.Contract(contractAddress, abi, provider);
 
-        let currentValue = await contract.getValue();
-
+        let currentValue = await contract.getPaymentAndSubscription(tokenID);
+        console.log({currentValue})
         // const durationInSeconds = await web3.contract(Subscription).
         return {
             statusCode: 200,
