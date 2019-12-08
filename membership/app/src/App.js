@@ -11,8 +11,7 @@ const subscriptionBaseURI = 'http://localhost:9000/.functions/tokenURI/'
 
 function App() {
   const { api, appState } = useAragonApi()
-  console.log({appState})
-  const {account, subscriptions, name, symbol, isSyncing } = appState
+  const { account, subscriptions, name, symbol, isSyncing } = appState
 
   async function getTokenAddress() {
     let network = await api.network().pipe(first()).toPromise()
@@ -21,7 +20,8 @@ function App() {
   }
 
   async function addSubscription() {
-    api.addSubscription(durationInSeconds,
+    api.addSubscription(
+      durationInSeconds,
       paymentAmount,
       account,
       await getTokenAddress(),

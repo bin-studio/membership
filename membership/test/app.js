@@ -5,18 +5,18 @@ const { getEventArgument } = require('@aragon/test-helpers/events')
 const { hash } = require('eth-ens-namehash')
 const deployDAO = require('./helpers/deployDAO')
 
-const CounterApp = artifacts.require('CounterApp.sol')
+const MembershipApp = artifacts.require('MembershipApp.sol')
 
 const ANY_ADDRESS = '0xffffffffffffffffffffffffffffffffffffffff'
 
-contract('CounterApp', ([appManager, user]) => {
+contract('MembershipApp', ([appManager, user]) => {
   let app
 
   beforeEach('deploy dao and app', async () => {
     const { dao, acl } = await deployDAO(appManager)
 
     // Deploy the app's base contract.
-    const appBase = await CounterApp.new()
+    const appBase = await MembershipApp.new()
 
     // Instantiate a proxy for the app, using the base contract as its logic implementation.
     const instanceReceipt = await dao.newAppInstance(
@@ -26,7 +26,7 @@ contract('CounterApp', ([appManager, user]) => {
       false, // setDefault - Whether the app proxy is the default proxy.
       { from: appManager }
     )
-    app = CounterApp.at(
+    app = MembershipApp.at(
       getEventArgument(instanceReceipt, 'NewAppProxy', 'proxy')
     )
 
@@ -46,7 +46,7 @@ contract('CounterApp', ([appManager, user]) => {
       { from: appManager }
     )
 
-    await app.initialize()
+    await app.initialize("Token Name", "Token Symbol")
   })
 
   it('should be incremented by any address', async () => {
