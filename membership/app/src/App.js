@@ -46,12 +46,18 @@ function App() {
         ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
         Amount – {sub.amount} [??]<br />
         Frequency – {sub.durationInSeconds} seconds<br />
-        <Button size="small" label="Subscribe" />
+        <Button size="small" label="Subscribe" onClick={() => subscribe(sub.subscriptionId)} />
       </li>
     )
     return (
       <ul>{listItems}</ul>
     )
+  }
+
+  // subscribe to subscription
+  async function subscribe(subscriptionId) {
+    console.log(subscriptionId)
+    return api.subscribe(subscriptionId).toPromise()
   }
 
   return (
@@ -92,7 +98,7 @@ function App() {
         </Section>
 
         <Section>
-          <Heading>Your Membership Badges</Heading>
+          <Heading>Your Membership Badges (NFTs)</Heading>
         </Section>
 
         {/* <Name>Subscriptions: {subscriptions}</Name> */}
