@@ -79,6 +79,7 @@ function App() {
         ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
         Amount – {sub.amount} [??]<br />
         Frequency – {sub.durationInSeconds} seconds<br />
+        <Button label="Pay Term" mode="positive" size="small" onClick={() => execute(sub.subscriptionId, account)} />
         <Button label="Unsubscribe" mode="negative" size="small" onClick={() => unsubscribe(sub.subscriptionId)} />
       </li>
     )
@@ -90,6 +91,11 @@ function App() {
   async function unsubscribe(subscriptionId) {
     console.log('unsubscribe', subscriptionId)
     return api.unsubscribe(subscriptionId).toPromise()
+  }
+  // execute
+  async function execute(subscriptionId, subscriberAddress) {
+    console.log('pay term', {subscriptionId, subscriberAddress})
+    return api.execute(subscriptionId, subscriberAddress).toPromise()
   }
 
 
