@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAragonApi } from '@aragon/api-react'
-import { Main, Button, Header, Bar, Box, DataView } from '@aragon/ui'
+import { Main, Button, Field, TextInput } from '@aragon/ui'
 import styled from 'styled-components'
 import { first } from 'rxjs/operators'
 try {
@@ -8,14 +8,19 @@ try {
 } catch (error) {
   console.log(`don't have fooToken ABI`)
 }
-const durationInSeconds = 5 /* minutes */ * 60 * 1000
-const paymentAmount = 1
-const subscriptionBaseURI = 'http://localhost:9000/.functions/tokenURI/'
+
+const defaults = {
+  paymentAmount: 1,
+  durationInSeconds: 5 /* minutes */ * 60 * 1000,
+  subscriptionBaseURI: 'http://localhost:9000/.functions/tokenURI/'
+}
+// const durationInSeconds = 5 /* minutes */ * 60 * 1000
+// const paymentAmount = 1
+// const subscriptionBaseURI = 'http://localhost:9000/.functions/tokenURI/'
 
 function App() {
   const { api, appState } = useAragonApi()
-  const { account, subscriptions, name, symbol, isSyncing } = appState
-  // const { amount: 0, duration: 0 } = newSub
+  const { account, subscriptions, name, symbol, isSyncing } = appState 
 
   async function getTokenAddress() {
     let network = await api.network().pipe(first()).toPromise()
@@ -23,21 +28,24 @@ function App() {
     return address
   }
 
+  // add subscription
+  const [newSubAmount, setNewSubAmount] = useState(defaults.paymentAmount)
+  const [newSubDuration, setNewSubDuration] = useState(defaults.durationInSeconds)
   async function addSubscription() {
     api.addSubscription(
-      durationInSeconds,
-      paymentAmount,
+      defaults.durationInSeconds,
+      defaults.paymentAmount,
       account,
       await getTokenAddress(),
-      subscriptionBaseURI
+      defaults.subscriptionBaseURI
     ).toPromise()
   }
 
-  const subs = subscriptions || []
+  // list subscriptions
   function SubscriptionsList(props) {
     const list = props.list || [];
-    const listItems = list.map(sub => 
-      <li>
+    const listItems = list.map((sub, i) => 
+      <li key={i}>
         ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
         Amount – {sub.amount} [??]<br />
         Frequency – {sub.durationInSeconds} seconds<br />
@@ -58,8 +66,18 @@ function App() {
           <Heading>Create new Membership</Heading>
           <form>
             <div>
-              Amount:
-              {/* <input type="text" value={newSub.amount} onChange={this.handleChange} /> */}
+              <Field label="Amount">
+                <TextInput.Number
+                  value={newSubAmount}
+                  onChange={event => setNewSubAmount(event.target.value)}
+                />
+              </Field>
+              <Field label="Amount">
+                <TextInput.Number
+                  value={newSubDuration}
+                  onChange={event => setNewSubDuration(event.target.value)}
+                />
+              </Field>
             </div>
             <Button mode="strong" onClick={addSubscription}>
               Add Membership
