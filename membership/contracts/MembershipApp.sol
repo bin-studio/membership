@@ -154,14 +154,14 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     }
 
     /**
-     * @notice Decrement the counter by 1
+     * @notice Check time since last payment.
      */
     function sinceLastExecution(uint256 subscriptionId, address subscriber) public view returns(uint64) {
         return getTimestamp64() - instances[subscriber][subscriptionId].lastExecuted;
     }
 
     /**
-     * @notice Decrement the counter by 1
+     * @notice Check last payment for a Subscription
      */
     function checkSubscription(uint256 subscriptionId, address subscriber) public view
     returns (uint64 _timeSinceLastExecution, uint256 lastNFT) {
@@ -171,7 +171,7 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     }
 
     /**
-     * @notice Increment the counter by 1
+     * @notice Subscribe to a subscription
      */
     function subscribe(uint256 subscriptionId) public isInitialized {
         require(subscriptions[subscriptionId].exists, "Subscription must exist");
@@ -180,13 +180,13 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
         instances[msg.sender][subscriptionId].exists = true;
         instances[msg.sender][subscriptionId].startTime = getTimestamp64();
         emit Subscribed(msg.sender, subscriptionId);
-        require(execute(subscriptionId, msg.sender), "Failed to execute new subscription");
+        // require(execute(subscriptionId, msg.sender), "Failed to execute new subscription");
     }
 
     /**
-     * @notice Increment the counter by 1
+     * @notice Unsubscribe from a subscription
      */
-    function unsubscribe(uint256 subscriptionId) public isInitialized {
+    function unsubscribe(uint256 subscriptionId) public {
         require(subscriptions[subscriptionId].exists, "Subscription must exist");
         require(instances[msg.sender][subscriptionId].exists, "Subscription instance doesn't exists");
         subscriptions[subscriptionId].active -= 1;
@@ -195,7 +195,7 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     }
 
     /**
-     * @notice Increment the counter by 1
+     * @notice Invalidate a subscription
      */
     function invalidate(uint256 subscriptionId, address recipient) public isInitialized {
         require(instances[recipient][subscriptionId].exists, "Instance must exist");
@@ -206,7 +206,7 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     }
 
     /**
-     * @notice Decrement the counter by 1
+     * @notice Collect dues from subscribers
      */
     function execute(uint256 subscriptionId, address tokenRecipient) public isInitialized returns (bool) {
         // require(subscriptions[subscriptionId].exists, "Subscription must exist");

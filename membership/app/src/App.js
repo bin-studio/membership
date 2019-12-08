@@ -17,7 +17,7 @@ const defaults = {
 
 function App() {
   const { api, appState } = useAragonApi()
-  const { account, subscriptions, name, symbol, isSyncing } = appState 
+  const { account, subscriptions, instances, name, symbol, isSyncing } = appState 
 
   async function getTokenAddress() {
     let network = await api.network().pipe(first()).toPromise()
@@ -66,6 +66,33 @@ function App() {
     return api.removeSubscription(subscriptionId).toPromise()
   }
 
+  // list My Subscriptions
+  function MySubscriptionsList(props) {
+    const instances = props.instances || []
+    const subscriptions = props.subscriptions || []
+    // filter subscriptions list against instances with user
+    const mySubs = subscriptions.filter(sub => instances.filter(inst => {
+      return inst.subscriber === account && sub.subscriptionId === inst.subscriptionId
+    }).length)
+    const listItems = mySubs.map((sub, i) =>
+      <li key={i}>
+        ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
+        Amount – {sub.amount} [??]<br />
+        Frequency – {sub.durationInSeconds} seconds<br />
+        <Button label="Unsubscribe" mode="negative" size="small" onClick={() => unsubscribe(sub.subscriptionId)} />
+      </li>
+    )
+    return (
+      <ul>{listItems}</ul>
+    )
+  }
+  // unsubscribe
+  async function unsubscribe(subscriptionId) {
+    console.log('unsubscribe', subscriptionId)
+    return api.unsubscribe(subscriptionId).toPromise()
+  }
+
+
   return (
     <Main>
       <BaseLayout>
@@ -100,6 +127,7 @@ function App() {
         </Section>
         <Section>
           <Heading>Your Memberships</Heading>
+          <MySubscriptionsList instances={instances} subscriptions={subscriptions} />
         </Section>
 
         <Section>

@@ -16,7 +16,8 @@ app.store(async (state, {event, returnValues}) => {
       name: await app.call('name').toPromise(),
       symbol: await app.call('symbol').toPromise(),
       subscriptionsTotal: await getValue(),
-      subscriptions: []
+      subscriptions: [],
+      instances: [],
     }
   }
 
@@ -32,6 +33,15 @@ app.store(async (state, {event, returnValues}) => {
       subs = subs.filter(sub => sub.subscriptionId !== returnValues.subscriptionId)
       state = { ...state, subscriptionsTotal: await getValue(), subscriptions: subs }
       break
+    case 'Subscribed':
+      // TODO - way to just store instances relative to the current account?
+      // or good to save all instances anyways?
+      state.instances.push(returnValues)
+      break
+    case 'Unsubscribed':
+      let insts = state.instances.filter(sub => sub.subscriber !== returnValues.subscriber && sub.subscriptionId !== returnValues.subscriptionId)
+      state = { ...state, instances: insts }
+      break
     case events.SYNC_STATUS_SYNCING:
       state = { ...state, isSyncing: true }
       break
@@ -39,10 +49,10 @@ app.store(async (state, {event, returnValues}) => {
       state = { ...state, isSyncing: false }
       break
     case events.ACCOUNTS_TRIGGER:
-        state = { ...state, account: await getAccount() }
+      state = { ...state, account: await getAccount() }
       break
     default:
-      console.log('unknown event', {event})
+      console.log('unknown event', {event, returnValues})
   }
 
   // Always return state !
