@@ -14,9 +14,6 @@ const defaults = {
   durationInSeconds: 5 /* minutes */ * 60 * 1000,
   subscriptionBaseURI: 'http://localhost:9000/.functions/tokenURI/'
 }
-// const durationInSeconds = 5 /* minutes */ * 60 * 1000
-// const paymentAmount = 1
-// const subscriptionBaseURI = 'http://localhost:9000/.functions/tokenURI/'
 
 function App() {
   const { api, appState } = useAragonApi()
@@ -31,10 +28,10 @@ function App() {
   // add subscription
   const [newSubAmount, setNewSubAmount] = useState(defaults.paymentAmount)
   const [newSubDuration, setNewSubDuration] = useState(defaults.durationInSeconds)
-  async function addSubscription() {
-    api.addSubscription(
-      defaults.durationInSeconds,
-      defaults.paymentAmount,
+  async function addSubscription(duration, amount) {
+    return api.addSubscription(
+      duration, // defaults.durationInSeconds,
+      amount, // defaults.paymentAmount,
       account,
       await getTokenAddress(),
       defaults.subscriptionBaseURI
@@ -67,19 +64,21 @@ function App() {
           <form>
             <div>
               <Field label="Amount">
-                <TextInput.Number
+                <TextInput
+                  type="number"
                   value={newSubAmount}
                   onChange={event => setNewSubAmount(event.target.value)}
                 />
               </Field>
-              <Field label="Amount">
-                <TextInput.Number
+              <Field label="Frequency">
+                <TextInput
+                  type="number"
                   value={newSubDuration}
                   onChange={event => setNewSubDuration(event.target.value)}
                 />
               </Field>
             </div>
-            <Button mode="strong" onClick={addSubscription}>
+            <Button mode="strong" onClick={() => addSubscription(newSubDuration, newSubAmount)}>
               Add Membership
             </Button>
           </form>
