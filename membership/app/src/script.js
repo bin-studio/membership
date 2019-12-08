@@ -16,13 +16,19 @@ app.store(async (state, {event, returnValues}) => {
       account: await getAccount(),
       name: await app.call('name').toPromise(),
       symbol: await app.call('symbol').toPromise(),
-      subscriptions: await getValue()
+      subscriptionsTotal: await getValue(),
+      subscriptions: []
     }
   }
 
   switch (event) {
     case 'NewSubscription':
-      nextState = { ...nextState, subscriptions: await getValue() }
+      const subs = nextState.subscriptions.slice()
+      // console.log('subs', subs)
+      // console.log('returnValues', typeof returnValues)
+      subs.push(returnValues)
+      // console.log('new subs', subs)
+      nextState = { ...nextState, subscriptionsTotal: await getValue(), subscriptions: subs }
       break
     case events.SYNC_STATUS_SYNCING:
       nextState = { ...nextState, isSyncing: true }

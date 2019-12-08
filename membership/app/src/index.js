@@ -7,7 +7,7 @@ const reducer = (state, action) => {
   console.log('reducer called', {action})
   if (state === null) {
     return {
-      subscriptions: 0,
+      // subscriptions: 0,
       isSyncing: true,
       name: "",
       symbol: "",

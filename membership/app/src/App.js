@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAragonApi } from '@aragon/api-react'
-import { Main, Button } from '@aragon/ui'
+import { Main, Button, Header, Bar, Box, DataView } from '@aragon/ui'
 import styled from 'styled-components'
 import { first } from 'rxjs/operators'
 try {
@@ -15,6 +15,7 @@ const subscriptionBaseURI = 'http://localhost:9000/.functions/tokenURI/'
 function App() {
   const { api, appState } = useAragonApi()
   const { account, subscriptions, name, symbol, isSyncing } = appState
+  // const { amount: 0, duration: 0 } = newSub
 
   async function getTokenAddress() {
     let network = await api.network().pipe(first()).toPromise()
@@ -32,18 +33,56 @@ function App() {
     ).toPromise()
   }
 
+  const subs = subscriptions || []
+  function SubscriptionsList(props) {
+    const list = props.list || [];
+    const listItems = list.map(sub => 
+      <li>
+        ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
+        Amount – {sub.amount} [??]<br />
+        Frequency – {sub.durationInSeconds} seconds<br />
+        <Button size="small" label="Subscribe" />
+      </li>
+    )
+    return (
+      <ul>{listItems}</ul>
+    )
+  }
+
   return (
     <Main>
       <BaseLayout>
         {isSyncing && <Syncing />}
-        <Name>Subscriptions: {subscriptions}</Name>
-        <Name>Name: {name}</Name>
-        <Name>Symbol: {symbol}</Name>
+        <Heading>Membership</Heading>
+        <Section>
+          <Heading>Create new Membership</Heading>
+          <form>
+            <div>
+              Amount:
+              {/* <input type="text" value={newSub.amount} onChange={this.handleChange} /> */}
+            </div>
+            <Button mode="strong" onClick={addSubscription}>
+              Add Membership
+            </Button>
+          </form>
+        </Section>
+        <Section>
+          <Heading>All Memberships</Heading>
+          <SubscriptionsList list={subscriptions} />
+        </Section>
+        <Section>
+          <Heading>Your Memberships</Heading>
+        </Section>
+
+        <Section>
+          <Heading>Your Membership Badges</Heading>
+        </Section>
+
+        {/* <Name>Subscriptions: {subscriptions}</Name> */}
+        {/* <Name>Name: {name}</Name> */}
+        {/* <Name>Symbol: {symbol}</Name> */}
         {/* <Name>Account: {account}</Name> */}
         <Buttons>
-          <Button mode="secondary" onClick={addSubscription}>
-            Add Subscription
-          </Button>
           {/* <Button mode="secondary" onClick={checkAccount}>
             Check
           </Button> */}
@@ -57,11 +96,8 @@ function App() {
 }
 
 const BaseLayout = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  flex-direction: column;
+  padding: 2em;
+  min-height:100vh;
 `
 
 const Name = styled.h1`
@@ -79,6 +115,20 @@ const Syncing = styled.div.attrs({ children: 'Syncing…' })`
   position: absolute;
   top: 15px;
   right: 20px;
+`
+
+const CreateSubscriptionsForm = styled.div`
+  display:flex;
+  margin:2em 0;
+  justify-content:space-between;
+`
+const Section = styled.section`
+  margin:3em 0;
+`
+const Heading = styled.h2`
+  font-weight:bolder;
+  font-size:1.125em;
+  margin-bottom:.5em;
 `
 
 export default App
