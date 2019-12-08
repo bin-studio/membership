@@ -70,7 +70,6 @@ function App() {
     <Main>
       <BaseLayout>
         {isSyncing && <Syncing />}
-        <Heading>Membership</Heading>
         <Section>
           <Heading>Create new Membership</Heading>
           <form>

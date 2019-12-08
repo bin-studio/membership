@@ -6,13 +6,12 @@ import { first } from 'rxjs/operators'
 const app = new Aragon()
 
 app.store(async (state, {event, returnValues}) => {
-  console.log('webworker reducer called')
+  // console.log('webworker reducer called')
   console.log({event, returnValues})
-  let nextState = { ...state }
 
   // Initial state
   if (state == null) {
-    nextState = {
+    state = {
       account: await getAccount(),
       name: await app.call('name').toPromise(),
       symbol: await app.call('symbol').toPromise(),
@@ -21,29 +20,33 @@ app.store(async (state, {event, returnValues}) => {
     }
   }
 
+  let subs = state.subscriptions
+
+  // Update state
   switch (event) {
     case 'NewSubscription':
-      const subs = nextState.subscriptions.slice()
-      // console.log('subs', subs)
-      // console.log('returnValues', typeof returnValues)
       subs.push(returnValues)
-      // console.log('new subs', subs)
-      nextState = { ...nextState, subscriptionsTotal: await getValue(), subscriptions: subs }
+      state = { ...state, subscriptionsTotal: await getValue(), subscriptions: subs }
+      break
+    case 'RemovedSubscription':
+      subs = subs.filter(sub => sub.subscriptionId !== returnValues.subscriptionId)
+      state = { ...state, subscriptionsTotal: await getValue(), subscriptions: subs }
       break
     case events.SYNC_STATUS_SYNCING:
-      nextState = { ...nextState, isSyncing: true }
+      state = { ...state, isSyncing: true }
       break
     case events.SYNC_STATUS_SYNCED:
-      nextState = { ...nextState, isSyncing: false }
+      state = { ...state, isSyncing: false }
       break
     case events.ACCOUNTS_TRIGGER:
-        nextState = { ...nextState, account: await getAccount() }
+        state = { ...state, account: await getAccount() }
       break
     default:
-        console.log('unknown event', {event})
+      console.log('unknown event', {event})
   }
 
-  return nextState
+  // Always return state !
+  return state
 })
 
 async function getAccount() {
