@@ -36,7 +36,7 @@ function App() {
         <Name>Subscriptions: {subscriptions}</Name>
         <Name>Name: {name}</Name>
         <Name>Symbol: {symbol}</Name>
-        <Name>Account: {account}</Name>
+        {/* <Name>Account: {account}</Name> */}
         <Buttons>
           <Button mode="secondary" onClick={addSubscription}>
             Add Subscription
