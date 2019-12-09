@@ -3,8 +3,10 @@ import { useAragonApi } from '@aragon/api-react'
 import { Main, Button, Field, TextInput } from '@aragon/ui'
 import styled from 'styled-components'
 import { first } from 'rxjs/operators'
+// import FooTokenABI from '../../build/contracts/FooToken.json'
+var FooTokenABI
 try {
-  var FooTokenABI = require('../../build/contracts/FooToken.json')
+  FooTokenABI = require('../../build/contracts/FooToken.json')
 } catch (error) {
   console.log(`don't have fooToken ABI`)
 }
@@ -46,7 +48,7 @@ function App() {
         ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
         Amount – {sub.amount} [??]<br />
         Frequency – {sub.durationInSeconds} seconds<br />
-        <Button label="Subscribe" size="small" onClick={() => subscribe(sub.subscriptionId)} />
+        <Button label="Subscribe" size="small" onClick={() => subscribe(sub.subscriptionId, sub.tokenAddress, sub.amount)} />
         <Button label="Delete" size="small" mode="negative" onClick={() => removeSubscription(sub.subscriptionId)}  />
       </li>
     )
@@ -56,9 +58,17 @@ function App() {
   }
 
   // subscribe to subscription
-  async function subscribe(subscriptionId) {
+  async function subscribe(subscriptionId, tokenAddress, amount) {
+    // TODO: decide and set amount to a better number
+    // right now it just approves enough to allow the subscription to be executed once
+    // either we set it as an option and multiply that number by amount
+    // or we set it to a crazy high number
     console.log('subscribe to', subscriptionId)
-    return api.subscribe(subscriptionId).toPromise()
+    const intentParams = {
+      token: { address: tokenAddress, value: amount * 2 }
+      // gas: 500000
+    }
+    return api.subscribe(subscriptionId, intentParams).toPromise()
   }
   // remove subscription
   async function removeSubscription(subscriptionId) {
