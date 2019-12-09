@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAragonApi } from '@aragon/api-react'
-import { Main, Button } from '@aragon/ui'
+import { Main, Button, Field, TextInput } from '@aragon/ui'
 import styled from 'styled-components'
 import { first } from 'rxjs/operators'
 try {
@@ -8,13 +8,16 @@ try {
 } catch (error) {
   console.log(`don't have fooToken ABI`)
 }
-const durationInSeconds = 5 /* minutes */ * 60 * 1000
-const paymentAmount = 1
-const subscriptionBaseURI = 'http://localhost:9000/.functions/tokenURI/'
+
+const defaults = {
+  paymentAmount: 1,
+  durationInSeconds: 5 /* minutes */ * 60 * 1000,
+  subscriptionBaseURI: 'http://localhost:9000/.functions/tokenURI/'
+}
 
 function App() {
   const { api, appState } = useAragonApi()
-  const { account, subscriptions, name, symbol, isSyncing } = appState
+  const { account, subscriptions, instances, name, symbol, isSyncing } = appState 
 
   async function getTokenAddress() {
     let network = await api.network().pipe(first()).toPromise()
@@ -22,28 +25,126 @@ function App() {
     return address
   }
 
-  async function addSubscription() {
-    api.addSubscription(
-      durationInSeconds,
-      paymentAmount,
+  // add subscription
+  const [newSubAmount, setNewSubAmount] = useState(defaults.paymentAmount)
+  const [newSubDuration, setNewSubDuration] = useState(defaults.durationInSeconds)
+  async function addSubscription(duration, amount) {
+    return api.addSubscription(
+      duration, // defaults.durationInSeconds,
+      amount, // defaults.paymentAmount,
       account,
       await getTokenAddress(),
-      subscriptionBaseURI
+      defaults.subscriptionBaseURI
     ).toPromise()
   }
+
+  // list subscriptions
+  function SubscriptionsList(props) {
+    const list = props.list || [];
+    const listItems = list.map((sub, i) => 
+      <li key={i}>
+        ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
+        Amount – {sub.amount} [??]<br />
+        Frequency – {sub.durationInSeconds} seconds<br />
+        <Button label="Subscribe" size="small" onClick={() => subscribe(sub.subscriptionId)} />
+        <Button label="Delete" size="small" mode="negative" onClick={() => removeSubscription(sub.subscriptionId)}  />
+      </li>
+    )
+    return (
+      <ul>{listItems}</ul>
+    )
+  }
+
+  // subscribe to subscription
+  async function subscribe(subscriptionId) {
+    console.log('subscribe to', subscriptionId)
+    return api.subscribe(subscriptionId).toPromise()
+  }
+  // remove subscription
+  async function removeSubscription(subscriptionId) {
+    console.log('remove', subscriptionId)
+    return api.removeSubscription(subscriptionId).toPromise()
+  }
+
+  // list My Subscriptions
+  function MySubscriptionsList(props) {
+    const instances = props.instances || []
+    const subscriptions = props.subscriptions || []
+    // filter subscriptions list against instances with user
+    const mySubs = subscriptions.filter(sub => instances.filter(inst => {
+      return inst.subscriber === account && sub.subscriptionId === inst.subscriptionId
+    }).length)
+    const listItems = mySubs.map((sub, i) =>
+      <li key={i}>
+        ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
+        Amount – {sub.amount} [??]<br />
+        Frequency – {sub.durationInSeconds} seconds<br />
+        <Button label="Pay Term" mode="positive" size="small" onClick={() => execute(sub.subscriptionId, account)} />
+        <Button label="Unsubscribe" mode="negative" size="small" onClick={() => unsubscribe(sub.subscriptionId)} />
+      </li>
+    )
+    return (
+      <ul>{listItems}</ul>
+    )
+  }
+  // unsubscribe
+  async function unsubscribe(subscriptionId) {
+    console.log('unsubscribe', subscriptionId)
+    return api.unsubscribe(subscriptionId).toPromise()
+  }
+  // execute
+  async function execute(subscriptionId, subscriberAddress) {
+    console.log('pay term', {subscriptionId, subscriberAddress})
+    return api.execute(subscriptionId, subscriberAddress).toPromise()
+  }
+
 
   return (
     <Main>
       <BaseLayout>
         {isSyncing && <Syncing />}
-        <Name>Subscriptions: {subscriptions}</Name>
-        <Name>Name: {name}</Name>
-        <Name>Symbol: {symbol}</Name>
+        <Section>
+          <Heading>Create new Membership</Heading>
+          <form>
+            <div>
+              <Field label="Amount">
+                <TextInput
+                  type="number"
+                  value={newSubAmount}
+                  onChange={event => setNewSubAmount(event.target.value)}
+                />
+              </Field>
+              <Field label="Frequency">
+                <TextInput
+                  type="number"
+                  value={newSubDuration}
+                  onChange={event => setNewSubDuration(event.target.value)}
+                />
+              </Field>
+            </div>
+            <Button mode="strong" onClick={() => addSubscription(newSubDuration, newSubAmount)}>
+              Add Membership
+            </Button>
+          </form>
+        </Section>
+        <Section>
+          <Heading>All Memberships</Heading>
+          <SubscriptionsList list={subscriptions} />
+        </Section>
+        <Section>
+          <Heading>Your Memberships</Heading>
+          <MySubscriptionsList instances={instances} subscriptions={subscriptions} />
+        </Section>
+
+        <Section>
+          <Heading>Your Membership Badges (NFTs)</Heading>
+        </Section>
+
+        {/* <Name>Subscriptions: {subscriptions}</Name> */}
+        {/* <Name>Name: {name}</Name> */}
+        {/* <Name>Symbol: {symbol}</Name> */}
         {/* <Name>Account: {account}</Name> */}
         <Buttons>
-          <Button mode="secondary" onClick={addSubscription}>
-            Add Subscription
-          </Button>
           {/* <Button mode="secondary" onClick={checkAccount}>
             Check
           </Button> */}
@@ -57,11 +158,8 @@ function App() {
 }
 
 const BaseLayout = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  flex-direction: column;
+  padding: 2em;
+  min-height:100vh;
 `
 
 const Name = styled.h1`
@@ -79,6 +177,20 @@ const Syncing = styled.div.attrs({ children: 'Syncing…' })`
   position: absolute;
   top: 15px;
   right: 20px;
+`
+
+const CreateSubscriptionsForm = styled.div`
+  display:flex;
+  margin:2em 0;
+  justify-content:space-between;
+`
+const Section = styled.section`
+  margin:3em 0;
+`
+const Heading = styled.h2`
+  font-weight:bolder;
+  font-size:1.125em;
+  margin-bottom:.5em;
 `
 
 export default App

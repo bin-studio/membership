@@ -154,24 +154,25 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     }
 
     /**
-     * @notice Decrement the counter by 1
+     * @notice Check time since last payment.
      */
     function sinceLastExecution(uint256 subscriptionId, address subscriber) public view returns(uint64) {
         return getTimestamp64() - instances[subscriber][subscriptionId].lastExecuted;
     }
 
     /**
-     * @notice Decrement the counter by 1
+     * @notice Check last payment for a Subscription
      */
     function checkSubscription(uint256 subscriptionId, address subscriber) public view
     returns (uint64 _timeSinceLastExecution, uint256 lastNFT) {
         uint64 lastExecuted = instances[subscriber][subscriptionId].lastExecuted;
         uint256 nftId = uint256(keccak256(abi.encodePacked(subscriptionId, subscriber, lastExecuted)));
+        // @billy maybe we add subscriptionId in response so can update in client state (via event) ?
         return (getTimestamp64() - lastExecuted, nftId);
     }
 
     /**
-     * @notice Increment the counter by 1
+     * @notice Subscribe to a subscription
      */
     function subscribe(uint256 subscriptionId) public isInitialized {
         require(subscriptions[subscriptionId].exists, "Subscription must exist");
@@ -180,13 +181,13 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
         instances[msg.sender][subscriptionId].exists = true;
         instances[msg.sender][subscriptionId].startTime = getTimestamp64();
         emit Subscribed(msg.sender, subscriptionId);
-        require(execute(subscriptionId, msg.sender), "Failed to execute new subscription");
+        // require(execute(subscriptionId, msg.sender), "Failed to execute new subscription");
     }
 
     /**
-     * @notice Increment the counter by 1
+     * @notice Unsubscribe from a subscription
      */
-    function unsubscribe(uint256 subscriptionId) public isInitialized {
+    function unsubscribe(uint256 subscriptionId) public {
         require(subscriptions[subscriptionId].exists, "Subscription must exist");
         require(instances[msg.sender][subscriptionId].exists, "Subscription instance doesn't exists");
         subscriptions[subscriptionId].active -= 1;
@@ -195,7 +196,7 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     }
 
     /**
-     * @notice Increment the counter by 1
+     * @notice Invalidate a subscription
      */
     function invalidate(uint256 subscriptionId, address recipient) public isInitialized {
         require(instances[recipient][subscriptionId].exists, "Instance must exist");
@@ -206,12 +207,19 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     }
 
     /**
-     * @notice Decrement the counter by 1
+     * @notice Collect dues from subscribers
      */
-    function execute(uint256 subscriptionId, address tokenRecipient) public isInitialized returns (bool) {
+    function execute(uint256 subscriptionId, address tokenRecipient) public returns (bool) {
         // require(subscriptions[subscriptionId].exists, "Subscription must exist");
         require(instances[tokenRecipient][subscriptionId].exists, "Instance must exist");
+        
+        // @billy I think we need to adjust for first invocation (since lastExecuted will start at 0 ?)
+        // maybe revise function to `canExecute` ?
         require(sinceLastExecution(subscriptionId, tokenRecipient) >= subscriptions[subscriptionId].durationInSeconds, "Already executed this period");
+        // ATTEMPT:
+        // bool hasExecuted = bytes(instances[tokenRecipient][subscriptionId].lastExecuted).length > 0;
+        // bool isDue = sinceLastExecution(subscriptionId, tokenRecipient) >= subscriptions[subscriptionId].durationInSeconds;
+        // require(!hasExecuted || isDue, "Already executed this period");
 
         address subscriptionRecipient = subscriptions[subscriptionId].recipient;
         require(SafeERC20.safeTransferFrom(ERC20(subscriptions[subscriptionId].tokenAddress), tokenRecipient, subscriptionRecipient, subscriptions[subscriptionId].amount),

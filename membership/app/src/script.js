@@ -6,38 +6,57 @@ import { first } from 'rxjs/operators'
 const app = new Aragon()
 
 app.store(async (state, {event, returnValues}) => {
-  console.log('webworker reducer called')
+  // console.log('webworker reducer called')
   console.log({event, returnValues})
-  let nextState = { ...state }
 
   // Initial state
   if (state == null) {
-    nextState = {
+    state = {
       account: await getAccount(),
       name: await app.call('name').toPromise(),
       symbol: await app.call('symbol').toPromise(),
-      subscriptions: await getValue()
+      subscriptionsTotal: await getValue(),
+      subscriptions: [],
+      instances: [],
     }
   }
 
+  let subs = state.subscriptions
+
+  // Update state
   switch (event) {
     case 'NewSubscription':
-      nextState = { ...nextState, subscriptions: await getValue() }
+      subs.push(returnValues)
+      state = { ...state, subscriptionsTotal: await getValue(), subscriptions: subs }
+      break
+    case 'RemovedSubscription':
+      subs = subs.filter(sub => sub.subscriptionId !== returnValues.subscriptionId)
+      state = { ...state, subscriptionsTotal: await getValue(), subscriptions: subs }
+      break
+    case 'Subscribed':
+      // TODO - way to just store instances relative to the current account?
+      // or good to save all instances anyways?
+      state.instances.push(returnValues)
+      break
+    case 'Unsubscribed':
+      let insts = state.instances.filter(sub => sub.subscriber !== returnValues.subscriber && sub.subscriptionId !== returnValues.subscriptionId)
+      state = { ...state, instances: insts }
       break
     case events.SYNC_STATUS_SYNCING:
-      nextState = { ...nextState, isSyncing: true }
+      state = { ...state, isSyncing: true }
       break
     case events.SYNC_STATUS_SYNCED:
-      nextState = { ...nextState, isSyncing: false }
+      state = { ...state, isSyncing: false }
       break
     case events.ACCOUNTS_TRIGGER:
-        nextState = { ...nextState, account: await getAccount() }
+      state = { ...state, account: await getAccount() }
       break
     default:
-        console.log('unknown event', {event})
+      console.log('unknown event', {event, returnValues})
   }
 
-  return nextState
+  // Always return state !
+  return state
 })
 
 async function getAccount() {
