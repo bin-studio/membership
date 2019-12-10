@@ -34,7 +34,7 @@
   "scripts": {
     "start": "npm run start:ipfs",
     "start:ipfs": "aragon run --files dist --app-init-args \"hello\" \"world\"",
-    "start:http": "aragon run --http localhost:8001 --http-served-from ./dist  --app-init-args \"hello\" \"world\"",
+    "start:http": "aragon run --http localhost:8001 --http-served-from ./dist  --app-init-args \"FooBarToken\" \"FT\"",
     "start:ipfs:template": "npm run start:ipfs -- --template Template --template-init @ARAGON_ENS",
     "start:http:template": "npm run start:http -- --template Template --template-init @ARAGON_ENS",
     "foobarToken": "aragon contracts migrate",

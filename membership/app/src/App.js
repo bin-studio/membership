@@ -19,7 +19,8 @@ const defaults = {
 
 function App() {
   const { api, appState } = useAragonApi()
-  const { account, subscriptions, instances, name, symbol, isSyncing } = appState 
+  const { name, symbol, account, subscriptions, instances, nfts, isSyncing } = appState 
+  const symbl = symbol.toUpperCase()
 
   async function getTokenAddress() {
     let network = await api.network().pipe(first()).toPromise()
@@ -46,7 +47,7 @@ function App() {
     const listItems = list.map((sub, i) => 
       <li key={i}>
         ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
-        Amount – {sub.amount} [??]<br />
+        Fee – {sub.amount} {symbl}<br />
         Frequency – {sub.durationInSeconds} seconds<br />
         <Button label="Subscribe" size="small" onClick={() => subscribe(sub.subscriptionId, sub.tokenAddress, sub.amount)} />
         <Button label="Delete" size="small" mode="negative" onClick={() => removeSubscription(sub.subscriptionId)}  />
@@ -87,7 +88,7 @@ function App() {
     const listItems = mySubs.map((sub, i) =>
       <li key={i}>
         ID – <span title={sub.subscriptionId}>{sub.subscriptionId.substr(0, 16)}...</span><br />
-        Amount – {sub.amount} [??]<br />
+        Fee – {sub.amount} {symbl}<br />
         Frequency – {sub.durationInSeconds} seconds<br />
         <Button label="Pay Term" mode="positive" size="small" onClick={() => execute(sub.subscriptionId, account)} />
         <Button label="Unsubscribe" mode="negative" size="small" onClick={() => unsubscribe(sub.subscriptionId)} />
@@ -108,6 +109,25 @@ function App() {
     return api.execute(subscriptionId, subscriberAddress).toPromise()
   }
 
+  // list NFTs
+  function MyNFTsList(props) {
+    const nfts = props.nfts || []
+    const myNfts = nfts.filter(nft => nft.subscriber === account)
+    myNfts.reverse()
+    const listItems = myNfts.map(nft => {
+      const sub = subscriptions.find(sub => sub.subscriptionId === nft.subscriptionId)
+      const secToDate = sec => new Date(sec * 1000).toUTCString()
+      // const expires = new Date((Number(nft.paymentTime) + Number(sub.durationInSeconds)) * 1000)
+      return <li  key={nft.nftId}>
+        NFT - {nft.nftId.substr(0, 10)}...<br />
+        Subscription - {nft.subscriptionId.substr(0, 10)}...<br />
+        Paid - {secToDate(nft.paymentTime)}<br />
+        Valid Until – {secToDate(Number(nft.paymentTime) + Number(sub.durationInSeconds))}
+      </li>
+    })
+    return (<ul>{listItems}</ul>)
+  }
+
 
   return (
     <Main>
@@ -117,7 +137,7 @@ function App() {
           <Heading>Create new Membership</Heading>
           <form>
             <div>
-              <Field label="Amount">
+              <Field label="Fee">
                 <TextInput
                   type="number"
                   value={newSubAmount}
@@ -148,11 +168,12 @@ function App() {
 
         <Section>
           <Heading>Your Membership Badges (NFTs)</Heading>
+          <MyNFTsList nfts={nfts} />
         </Section>
 
         {/* <Name>Subscriptions: {subscriptions}</Name> */}
         {/* <Name>Name: {name}</Name> */}
-        {/* <Name>Symbol: {symbol}</Name> */}
+        {/* <Name>Symbol: {symbl}</Name> */}
         {/* <Name>Account: {account}</Name> */}
         <Buttons>
           {/* <Button mode="secondary" onClick={checkAccount}>

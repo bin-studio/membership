@@ -18,6 +18,7 @@ app.store(async (state, {event, returnValues}) => {
       subscriptionsTotal: await getValue(),
       subscriptions: [],
       instances: [],
+      nfts: [],
     }
   }
 
@@ -36,11 +37,16 @@ app.store(async (state, {event, returnValues}) => {
     case 'Subscribed':
       // TODO - way to just store instances relative to the current account?
       // or good to save all instances anyways?
+      // TODO - increment subscription.active value (or do in EXECUTED ?)
       state.instances.push(returnValues)
       break
     case 'Unsubscribed':
       let insts = state.instances.filter(sub => sub.subscriber !== returnValues.subscriber && sub.subscriptionId !== returnValues.subscriptionId)
+      // TODO - decrement subscription.active value
       state = { ...state, instances: insts }
+      break
+    case 'Executed':
+      state.nfts.push(returnValues)
       break
     case events.SYNC_STATUS_SYNCING:
       state = { ...state, isSyncing: true }

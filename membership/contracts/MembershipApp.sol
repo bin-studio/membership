@@ -14,7 +14,7 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
     event RemovedSubscription(uint256 subscriptionId, uint64 durationInSeconds, uint256 amount, address recipient, address tokenAddress);
     event Subscribed(address subscriber, uint256 subscriptionId);
     event Unsubscribed(address subscriber, uint256 subscriptionId);
-    event Executed(address subscriber, uint256 subscriptionId);
+    event Executed(address subscriber, uint256 subscriptionId, uint256 nftId, uint64 paymentTime);
 
     struct Subscription {
         bool exists;
@@ -222,10 +222,10 @@ contract MembershipApp is AragonApp, ERC721Full, Metadata {
         address subscriptionRecipient = subscriptions[subscriptionId].recipient;
         require(SafeERC20.safeTransferFrom(ERC20(subscriptions[subscriptionId].tokenAddress), tokenRecipient, subscriptionRecipient, subscriptions[subscriptionId].amount),
             "Payment not successful");
-        emit Executed(tokenRecipient, subscriptionId);
-
+        
         uint64 paymentTime = getTimestamp64();
         uint256 nftId = uint256(keccak256(abi.encodePacked(subscriptionId, tokenRecipient, paymentTime)));
+        emit Executed(tokenRecipient, subscriptionId, nftId, paymentTime);
 
         _mint(tokenRecipient, nftId);
         instances[tokenRecipient][subscriptionId].lastExecuted = paymentTime;
