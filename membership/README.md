@@ -1,25 +1,14 @@
 # Membership App
 
-In one terminal window run `yarn start:app`  
-In another terminal window run `yarn start:http`  
-Once the second terminal window finishes, open a third window and run  `yarn foobarToken`  
+An Aragon Membership App that allows DAO organizations to create membership subscriptions which users can subscribe to and fund org's operations. Subscriptions can optionally grant an Non-Fungible Token (NFT) as proof of membership.
 
-# Aragon React Boilerplate
+Built from [Aragon React Boilerplate](https://github.com/aragon/aragon-react-boilerplate) for Aragon applications, includes a fully working example app, complete with a background worker and a front-end in React (with Aragon UI). Also comes with a DAO Template which will allow for using the app to interact with other Aragon apps like the Voting app. More about DAO Template [here](https://hack.aragon.org/docs/templates-intro).
 
-> 🕵️ [Find more boilerplates using GitHub](https://github.com/search?q=topic:aragon-boilerplate) |
-> ✨ [Official boilerplates](https://github.com/search?q=topic:aragon-boilerplate+org:aragon)
+## Quickstart
 
-React boilerplate for Aragon applications.
-
-This boilerplate includes a fully working example app, complete with a background worker and a front-end in React (with Aragon UI). Also comes with a DAO Template which will allow for using your app to interact with other Aragon apps like the Voting app. You can read more about DAO Template [here](https://hack.aragon.org/docs/templates-intro).
-
-## Usage
-
-To setup use the command `create-aragon-app`:
-
-```sh
-npx create-aragon-app <app-name> react
-```
+In one terminal window run `npm run start:app`  
+In another terminal window run `npm run start:http`  
+Once the second terminal window finishes, open a third window and run  `npm run foobarToken`  
 
 ## Structure
 
@@ -31,7 +20,7 @@ root
 ├ ├── src
 ├ └── package.json
 ├── contracts
-├ ├── CounterApp.sol
+├ ├── MembershipApp.sol
 ├ └── Template.sol
 ├── migration
 ├── test
@@ -45,7 +34,7 @@ root
   - **src**: Source files.
   - [**package.json**](https://docs.npmjs.com/creating-a-package-json-file): Frontend npm configuration file.
 - **contracts**: Smart Constracts folder.
-  - `CounterApp.sol`: Aragon app contract example.
+  - `MembershipApp.sol`: Aragon app contract.
   - `Template.sol`: [Aragon Template](https://hack.aragon.org/docs/templates-intro) to deploy a fully functional DAO.
 - [**migrations**](https://truffleframework.com/docs/truffle/getting-started/running-migrations): Migrations folder.
 - **test**: Tests folder.
@@ -64,11 +53,11 @@ root
 npx aragon run --template Template --template-init @ARAGON_ENS
 ```
 
-## Running your app
+## Running the app
 
 ### Using HTTP
 
-Running your app using HTTP will allow for a faster development process of your app's front-end, as it can be hot-reloaded without the need to execute `aragon run` every time a change is made.
+Running the app using HTTP will allow for a faster development process of your app's front-end, as it can be hot-reloaded without the need to execute `aragon run` every time a change is made.
 
 - First start your app's development server running `npm run start:app`, and keep that process running. By default it will rebuild the app and reload the server when changes to the source are made.
 
